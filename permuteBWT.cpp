@@ -65,7 +65,7 @@ void permute_stack(std::stack< uint64_t* > &Stack, std::vector< pair <char,uint6
 }
 
 // write the BWT runs in BWTblock vector
-void write_block(std::vector< pair <char,uint64_t> > &BWTblock, bool rev, int &last, FILE *obwt){
+void write_block(std::vector< pair <char,uint64_t> > &BWTblock, int &last, FILE *obwt){
     // initialize variables
     int64_t i, rep;
     char c;
@@ -154,6 +154,7 @@ int main(int argc, char** argv)
 	  		// if we are in at the beginning SAP interval
 	  		if( sap_buffer[i] == 0 ){
 	  			// if the interval is not interesting
+                /*
 	  			if( no_char == 1 ){
 	  				// update last character
 	  				last = j;
@@ -169,7 +170,30 @@ int main(int argc, char** argv)
 	                    permute_stack( Stack, BWTblock );
 	                    write_block( BWTblock, true, last, obwt );
 	  				}
-	  			}
+	  			}*/
+                if( no_char == 1 ){
+                    // update last character
+                    last = j;
+                    // if the stack is empty
+                    if( Stack.empty() ){
+                        for(y=0; y<Parikh[j]; ++y){ putc(j, obwt);  }
+                        Parikh[j] = 0;
+                    }
+                    else
+                    {
+                        uint64_t* top = Stack.top();
+                        // if there is a matching char with previous interval
+                        BWTblock.push_back( std::make_pair(j,top[j]+Parikh[j]) );
+                        top[j]=0; Parikh[j]=0;
+                        // empty the stack
+                        permute_stack( Stack, BWTblock );
+                        write_block( BWTblock, last, obwt );
+                    }
+                    // insert current char and continue
+                    j = bwt_buffer[i];
+                    Parikh[j] = 1; no_char = 1;
+                    continue;
+                }
 	  			else if( no_char > 1 )
 	  			{
 	  				// we are in an interesting interval
@@ -182,7 +206,7 @@ int main(int argc, char** argv)
 	  						// write a new BWT block
 	  						BWTblock.push_back( make_pair( last, Parikh[last] ) );
 	                        Parikh[ last ] = 0;
-	                        write_block(BWTblock, false, last, obwt);
+	                        write_block(BWTblock, last, obwt);
 	  					}
 	  					// insert a new Parikh vector in the stak
 	                    uint64_t* newParikh = new uint64_t[alph_size]();
@@ -214,7 +238,7 @@ int main(int argc, char** argv)
                         	}
                         	// permute the characters in the vector
                         	permute_stack(Stack,BWTblock);
-                        	write_block(BWTblock,true,last,obwt);
+                        	write_block(BWTblock, last, obwt);
                         }
                         // push a new Parikh vector
                         uint64_t* newParikh = new uint64_t[alph_size]();
@@ -235,8 +259,8 @@ int main(int argc, char** argv)
     }
     // write the last Parick vector
     Stack.push(Parikh);
-    permute_stack(Stack,BWTblock);
-    write_block(BWTblock,true,last,obwt);
+    permute_stack(Stack, BWTblock);
+    write_block(BWTblock, last, obwt);
     // close output file
     fclose(obwt);
     delete[] bwt_buffer;

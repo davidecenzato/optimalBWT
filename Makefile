@@ -1,5 +1,6 @@
 # compilation flags
 CXX_FLAGS=-std=c++11 -O3 -Wall -Wextra -pedantic -g
+#CXX_FLAGS=-std=c++11 -O3 -Wall -Wextra -pedantic -fsanitize=address -fno-omit-frame-pointer -g
 CFLAGS=-O3 -Wall -std=c99 -g
 CC=gcc
 CCX=g++
@@ -19,7 +20,7 @@ lib/optsais64.o: lib/optSAIS.cpp lib/optSAIS.h
 	$(CCX) $(CXX_FLAGS) -c -o $@ $< -DM64
 
 optsais: main.cpp common.hpp computeTransform.cpp external/malloc_count/malloc_count.o lib/optsais32.o 
-	$(CXX) $(CXX_FLAGS) -o $@ main.cpp common.hpp computeTransform.cpp external/malloc_count/malloc_count.o lib/optsais32.o -ldl
+	$(CXX) $(CXX_FLAGS) -o $@ main.cpp common.hpp computeTransform.cpp external/malloc_count/malloc_count.o lib/optsais32.o -ldl #-fsanitize=address
 
 optsais64: main.cpp common.hpp computeTransform.cpp external/malloc_count/malloc_count.o lib/optsais64.o 
 	$(CXX) $(CXX_FLAGS) -o $@ main.cpp common.hpp computeTransform.cpp external/malloc_count/malloc_count.o lib/optsais64.o  -ldl -DM64 

@@ -96,6 +96,46 @@ void induceS_unsigned(uint_t *SA, uint_t *s, uint_t *bkt, uint_t n,
 }
 
 // induce the L types and the SAP-array with a scan left to right
+void induceL_unsigned_s2(uint_t *SA, uint_t *s, uint_t *bkt, uint_t n, uint_t K,
+                         int cs, unsigned char sep, uint_t ns) {
+  uint_t i, j, y;
+  // find heads of buckets
+  getBuckets_unsigned((uint_t*)s, bkt, n, K, cs, false);
+  // scan the suffix array
+  for(i=0; i<n-1; ++i){
+    // check if we are in a new interval
+    j = SA[i];
+    // if the SA value is not UEMPTY
+    if( j != UEMPTY && j > 0 ) {
+      y = uchr(j-1);
+      if( (y >= uchr(j)) && y != sep ){
+        SA[bkt[y]++] = j-1;
+      }
+    }
+  }
+}
+
+// induce the L types and the SAP-array with a scan right to left
+void induceS_unsigned_s2(uint_t *SA, uint_t *s, uint_t *bkt, uint_t n, uint_t K,
+                         int cs, unsigned char sep, uint_t ns) {
+  uint_t i, j, c, x;
+  // find tails of buckets
+  getBuckets_unsigned((uint_t*)s, bkt, n, K, cs, true);
+  // scan the suffix array right to left
+  for(i=0; i < n-ns; ++i){
+    j = n-1-i;
+    // if the SA value is not UEMPTY
+    x = SA[j];
+    if( x != UEMPTY && x > 0 ) {
+      c = uchr(x-1);
+      if( ( c <= uchr(x) && bkt[c] < j ) && c != sep ){
+        SA[bkt[c]--]=x-1;
+      } 
+    }
+  }
+}
+
+// induce the L types and the SAP-array with a scan left to right
 void induceL_unsigned_SAP(uint_t *SA, unsigned char *I, uint_t *s, uint_t *bkt, 
                           uint_t n, uint_t K, int cs, unsigned char sep, uint_t ns) {
   uint_t i, j, y;
@@ -660,6 +700,161 @@ void optSAIS_U(uint_t *s, uint_t *SA, unsigned char *I, uint_t n, uint_t ns,
   free(bkt); 
 }
 
+void optSAIS_U_SA(uint_t *s, uint_t *SA, uint_t n, uint_t ns,
+                  uint_t K, int cs, unsigned char sep, int m) {
+  // initialize variables
+  uint_t i, j, x, o;
+  uint_t g = 0; // singletons counter
+  bool y, t;
+
+  // stage 1: reduce the problem by at least 1/2
+  uint_t *bkt = (uint_t *)malloc(sizeof(uint_t)*K); // bucket counters
+  // initialize SA values to -1
+  for(i=0; i<n; ++i) SA[i]=UEMPTY; 
+  // find ends of buckets 
+  getBuckets_unsigned(s, bkt, n, K, cs, true); 
+  // place S* suffixes in their buckets
+  // process the last character
+  x = uchr(n-1); o = uchr(n-2); t = true;
+  if(o > x){ SA[bkt[x]--]=n-1; }
+  else{ g++; }
+  // process all other characters
+  for(i=1; i<=n-2; ++i){
+    j = n-1-i; 
+    // compute the current type
+    t = ( ( o<x || (o==x && t) )?1:0 );
+    x = o;
+    o = uchr(j-1);
+    // if the current type is S
+    if(t){
+      if( o > x ) { SA[bkt[x]--]=j; }
+      else if( x==sep ) { g++; }
+    }
+  }
+  // if the first character is a separator it is a singleton
+  if( uchr(0)==sep ) g++;
+
+  // sort LMS-substrings
+  induceL_unsigned(SA, s, bkt, n, K, cs, sep, ns); 
+  induceS_unsigned(SA, s, bkt, n, K, cs, sep, ns); 
+
+  // free bucket vector
+  free(bkt); 
+  // compact all the sorted substrings into the first n1 items of s
+  uint_t n1=0;
+  for(i=0; i<n; ++i){
+      uint_t pos = SA[i];
+      if(pos != UEMPTY){ SA[n1++] = pos; }
+  }
+  // Init the name array buffer
+  for(i=n1; i<n; i++) SA[i]=UEMPTY;
+
+  // find the lexicographic names of all substrings
+  uint_t name=1, name2=1;
+  if(n1 > 0){
+    // insert the first LMS substring
+    uint_t pos = SA[0];
+    SA[n1+((pos%2==0)?pos/2:(pos-1)/2)] = name-1; 
+    // compute first LMS length and pos
+    uint_t len = getLengthOfLMS(s, n, pos, sep, cs);
+    uint_t prev = pos, pre_len = len;
+    uint_t ppos, pprev;
+    for(i=1; i<n1; i++) {
+      pos=SA[i]; bool diff=false, same=false;
+      len = getLengthOfLMS(s, n, pos, sep, cs);
+      // if the LMS length are different skip and increase name counter
+      if(len != pre_len){ diff = true; }
+      else{
+        // if same length compare all the characters till you find a mismatch
+        ppos = pos, pprev = prev;
+        for( j=0; j<len; ++j ) { 
+          if( uchr(pprev) != uchr(ppos) ){ diff=true; break; }
+          else{
+            if( uchr(pprev) == sep && uchr(ppos) == sep ) { same=true; break; }
+            pprev++; ppos++;
+          }
+        }
+      }
+      // for name2 all identical dollars, for name unique dollars
+      if(diff){
+        name2++; name++;
+        prev=pos; pre_len=len;
+      }
+      else if (same) name2++;
+    // insert new name
+    pos=(pos%2==0)?pos/2:(pos-1)/2;
+    SA[n1+pos]=name-1; 
+    }
+  }
+  // compact SA and I vectors
+  for(i=n-1, j=n-1; i>=n1; i--){
+    if(SA[i]!=UEMPTY){
+      SA[j--]=SA[i];
+    }
+  }
+  // s1 is done now
+  uint_t *SA1=SA, *s1=SA+n-n1;
+
+  // stage 2: solve the reduced problem
+  // recurse if names are not yet unique
+  if(name2<n1) {
+    optSAIS_U_SA((uint_t*)s1, SA1, n1, (ns-g), name, sizeof(uint_t), 0, m+1);
+  } else { // generate the suffix array of s1 directly
+    bkt = (uint_t *)malloc(sizeof(uint_t)*name);
+    getBuckets_unsigned((uint_t*)s1, bkt, n1, name, sizeof(uint_t), false); // find beginning of buckets
+    // compute the SA and SAP-array of s1 and place it at the beginning of SA
+    for(i=0; i<n1; ++i){
+      SA1[bkt[s1[i]]++] = i;
+    }
+    free(bkt);
+  }
+
+  // stage 3: induce the result for the original problem
+
+  // initialize the buckets for s
+  bkt = (uint_t *)malloc(sizeof(uint_t)*K); 
+  // compute the end of each s bucket 
+  getBuckets_unsigned((uint_t*)s, bkt, n, K, cs, true);
+  // compute the original LMS positions of s and put them in s1
+  uint_t c = 0, h = 0;
+  x = uchr(n-1); o = uchr(n-2); t = true;
+  if(o > x){ s1[n1-1-(c++)]=n-1; } 
+  // process all other characters
+  for(i=1; i<=n-2; ++i){
+    j = n-1-i; // n-1 -n+2 = +1
+    // compute the current type
+    t = ( ( o<x || (o==x && t) )?1:0 );
+    x = o;
+    o = uchr(j-1);
+    // if the current type is S
+      if( t && o > x ) { s1[n1-1-(c++)]=j; }
+  }
+  assert(c==n1);
+  // map back procedure
+  for(i=0; i<n1; ++i){ SA1[i]=s1[SA1[i]]; }
+  // clean the suffix array
+  for(i=n1; i<n; ++i){ SA[i]=UEMPTY; } 
+  // insert sorted LMS in the correct suffix array buckets
+  for(i=0; i < n1-(ns-g); ++i) {
+    j = n1-1-i;
+      // take SA[j] and I[j] values
+    x=SA[j]; SA[j]=UEMPTY;
+    // put values in the correct positions
+    SA[bkt[uchr(x)]--]=x;
+  }
+  // handle the singletons if we have some
+  if(g > 0){
+      j=0;
+      // insert the superators at the beginning of the sa
+      for(i=0;i<n;++i){ if(uchr(i)== sep){ SA[j++]=i; } }
+  }
+  // sort LMS-substrings and compute SAP-array   
+  induceL_unsigned_s2(SA, s, bkt, n, K, cs, sep, ns);
+  induceS_unsigned_s2(SA, s, bkt, n, K, cs, sep, ns);
+
+  free(bkt); 
+}
+
 /** @brief Computes the suffix array SA, and SAP-array I of the strings concatenated
  *   using (implicitly) different dollars using the optSAIS algorithm
  *
@@ -690,7 +885,24 @@ void optsais(char *s, int_t *SA, unsigned char *I, int_t n, int_t ns, int K){
  *
  *  @return void.
  */
-void optsais_unsigned(char *s, uint_t *SA, unsigned char *I, uint_t n, uint_t ns, uint_t K, int mode){
+void optsais_unsigned_sa_sap(char *s, uint_t *SA, unsigned char *I, uint_t n, uint_t ns, uint_t K, int mode){
     if((s == nullptr) || (SA == nullptr) || (n == 0)) { std::cerr << "Empty input given." << std::endl; exit(-1); }
     optSAIS_U((uint_t *)s, (uint_t *)SA, (unsigned char *)I, n, ns, K, sizeof(char), 1, 0);
+}
+
+/** @brief Computes the suffix array SA of the strings concatenated
+ *   using (implicitly) different dollars
+ *
+ *  @param s    input concatenated string, using separators s[i]=0 and with s[n-1]=0
+ *  @param SA   Suffix array 
+ *  @param n    string length
+ *  @param ns   number of strings
+ *  @param K    alphabet size
+ *  @param m    boolean (m = 1 for input order SA) 
+ *
+ *  @return void.
+ */
+void optsais_unsigned_sa(char *s, uint_t *SA, uint_t n, uint_t ns, uint_t K, int mode){
+    if((s == nullptr) || (SA == nullptr) || (n == 0)) { std::cerr << "Empty input given." << std::endl; exit(-1); }
+    optSAIS_U_SA((uint_t *)s, (uint_t *)SA, n, ns, K, sizeof(char), 1, 0);
 }

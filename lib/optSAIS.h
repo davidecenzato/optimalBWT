@@ -72,6 +72,19 @@ void optsais(char *s, int_t *SA, unsigned char *I, int_t n, int_t ns, int K);
  *
  *  @return void.
  */
-void optsais_unsigned(char *s, uint_t *SA, unsigned char *I, uint_t n, uint_t ns, uint_t K, int m);
+void optsais_unsigned_sa_sap(char *s, uint_t *SA, unsigned char *I, uint_t n, uint_t ns, uint_t K, int m);
+
+/** @brief Computes the suffix array SA of the strings concatenated
+ *   using (implicitly) different dollars
+ *
+ *  @param s		input concatenated string, using separators s[i]=0 and with s[n-1]=0
+ *  @param SA		Suffix array 
+ *  @param n		string length
+ *  @param ns		number of strings
+ *  @param K		alphabet size
+ *
+ *  @return void.
+ */
+void optsais_unsigned_sa(char *s, uint_t *SA, uint_t n, uint_t ns, uint_t K, int m);
 
 #endif

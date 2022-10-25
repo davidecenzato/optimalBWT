@@ -9,7 +9,7 @@ struct Args {
   std::string filename = "";
   std::string outname = "";
   int format = 0; // input file format: 1 fasta | 2 fastq | 0 txt
-  int variant = -1; // bwt variant: 0 ebwt | 1 $ebwt
+  int variant = 0; // bwt variant: 0 ebwt | 1 $ebwt
   bool sa = false; // write suffix array in output 
   int verbose = 0; // verbosity level
 };

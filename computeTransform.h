@@ -21,4 +21,6 @@ void compute_optbwt_unsigned(Args arg);
 
 void compute_bwt_sap_unsigned(Args arg); 
 
+void compute_bwt_unsigned(Args arg); 
+
 #endif

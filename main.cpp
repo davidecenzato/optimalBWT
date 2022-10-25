@@ -9,12 +9,11 @@
 void print_help(char** argv) {
   std::cout << "Usage: " << argv[ 0 ] << " <input filename> [options]" << std::endl;
   std::cout << "  Options: " << std::endl
-        << "\t-e \tconstruct the mdollarBWT and SAP-array, def. True " << std::endl
-        << "\t-d \tconstruct the optimalBWT (internal memory), def. False " << std::endl
+        << "\t-e \tconstruct the BWT (input order), def. True " << std::endl
+        << "\t-d \tconstruct the BWT (input order) and SAP-array, def. False " << std::endl
+        << "\t-p \tconstruct the optimalBWT, def. False " << std::endl
         << "\t-f \ttake in input a fasta file, def. True " << std::endl
         << "\t-q \ttake in input a fastq file, def. False " << std::endl 
-        //<< "\t-n \ttake in input a text file, def. False " << std::endl 
-        //<< "\t-s \twrite the whole (circular) suffix array, def. False " << std::endl
         << "\t-o O\tbasename for the output files, def. <input filename>" << std::endl;
 
   exit(-1);
@@ -30,7 +29,7 @@ void parseArgs( int argc, char** argv, Args& arg ) {
   puts("");
  
   std::string sarg;
-  while ((c = getopt( argc, argv, "edfqsho:n") ) != -1) {
+  while ((c = getopt( argc, argv, "edpfqsho:n") ) != -1) {
     switch(c) {
       case 'e':
         arg.variant = 0; break;
@@ -86,11 +85,15 @@ int main(int argc, char** argv)
   // select what to compute
   switch(arg.variant) {
     case 0:
-      std::cout << "Computing the mdollarBWT and SAP-array of : " << arg.filename << std::endl;
-      compute_bwt_sap_unsigned(arg);
+      std::cout << "Computing the BWT (input order) : " << arg.filename << std::endl;
+      compute_bwt_unsigned(arg);
       break;
     case 1:
-      std::cout << "Computing the optimalBWT (internal memory) of : " << arg.filename << std::endl;
+      std::cout << "Computing the BWT (input order) and SAP-array of : " << arg.filename << std::endl;
+      compute_bwt_sap_unsigned(arg);
+      break;
+    case 2:
+      std::cout << "Computing the optimal BWT of : " << arg.filename << std::endl;
       compute_optbwt_unsigned(arg);
       break;
     default:
