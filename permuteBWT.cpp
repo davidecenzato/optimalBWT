@@ -67,7 +67,7 @@ void permute_stack(std::stack< uint64_t* > &Stack, std::vector< pair <char,uint6
 // write the BWT runs in BWTblock vector
 void write_block(std::vector< pair <char,uint64_t> > &BWTblock, int &last, FILE *obwt){
     // initialize variables
-    int64_t i, rep;
+    int64_t i; uint64_t rep;
     char c;
     last = BWTblock[0].first;
     vector<uint8_t> run_buffer;

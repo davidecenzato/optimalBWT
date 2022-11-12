@@ -8,14 +8,14 @@
 struct Args {
   std::string filename = "";
   std::string outname = "";
-  int format = 0; // input file format: 1 fasta | 2 fastq | 0 txt
-  int variant = 0; // bwt variant: 0 ebwt | 1 $ebwt
-  bool sa = false; // write suffix array in output 
-  int verbose = 0; // verbosity level
+  int format = 0; // input file format: 0 fasta | 1 fastq
+  int variant = 0; // bwt variant: 0 optBWT | 1 inputBWT | 2 inputBWT + SAP
+  bool verbose = false; // verbosity level
 };
+
 // function to load a fasta file
 template<typename uint_s>
-void load_fasta(const char *filename, std::vector<uint8_t>& Text, std::vector<uint_s>& onset,
+void load_fasta(const char *filename, std::vector<char>& Text, std::vector<uint_s>& onset,
                 uint_s& sum, uint_s& ns, bool concat){
     // open the input stream
     std::ifstream input(filename);
@@ -32,7 +32,7 @@ void load_fasta(const char *filename, std::vector<uint8_t>& Text, std::vector<ui
         // if we are in 32 bit mode, check that parse has less than 2^32-2 words
         if(Text.size() > pow(2,32) - 1){ 
             // the input file is too big
-            std::cerr << "Error, the file size is > 4GB, please use ./bwtvartool64. exiting..." << std::endl;
+            std::cerr << "Error, the file size is > 4.29 GB, please use ./optsais64. exiting..." << std::endl;
             exit(-1);
         }
     #endif 
@@ -79,9 +79,10 @@ void load_fasta(const char *filename, std::vector<uint8_t>& Text, std::vector<ui
     // close stream
     input.close();
 }
+
 // function to load a fastq file
 template<typename uint_s>
-void load_fastq(const char *filename, std::vector<uint8_t>& Text, std::vector<uint_s>& onset,
+void load_fastq(const char *filename, std::vector<char>& Text, std::vector<uint_s>& onset,
                 uint_s& sum, uint_s& ns, bool concat){
     // open the input stream
     std::ifstream input(filename);
@@ -98,7 +99,7 @@ void load_fastq(const char *filename, std::vector<uint8_t>& Text, std::vector<ui
         // if we are in 32 bit mode, check that parse has less than 2^32-2 words
         if(Text.size() > pow(2,32) - 1){ 
             // the input file is too big
-            std::cerr << "Error, the file size is > 4GB, please use ./bwtvartool64. exiting..." << std::endl;
+            std::cerr << "Error, the file size is > 4.29 GB, please use ./optsais64. exiting..." << std::endl;
             exit(-1);
         }
     #endif 
@@ -169,7 +170,7 @@ void load_fasta_conc(const char *filename, std::vector<char>& Text, uint_s& sum,
         // if we are in 32 bit mode, check that parse has less than 2^32-2 words
         if(Text.size() > pow(2,32) - 1){ 
             // the input file is too big
-            std::cerr << "Error, the file size is > 4GB, please use ./bwtvartool64. exiting..." << std::endl;
+            std::cerr << "Error, the file size is > 4.29 GB, please use ./optsais64. exiting..." << std::endl;
             exit(-1);
         }
     #endif 
@@ -210,6 +211,7 @@ void load_fasta_conc(const char *filename, std::vector<char>& Text, uint_s& sum,
     // close stream
     input.close();
 }
+
 // function to load a fastq file
 template<typename uint_s>
 void load_fastq_conc(const char *filename, std::vector<char>& Text, uint_s& sum, uint_s& ns){
@@ -228,7 +230,7 @@ void load_fastq_conc(const char *filename, std::vector<char>& Text, uint_s& sum,
         // if we are in 32 bit mode, check that parse has less than 2^32-2 words
         if(Text.size() > pow(2,32) - 1){ 
             // the input file is too big
-            std::cerr << "Error, the file size is > 4GB, please use ./bwtvartool64. exiting..." << std::endl;
+            std::cerr << "Error, the file size is > 4.29 GB, please use ./optsais64. exiting..." << std::endl;
             exit(-1);
         }
     #endif 
@@ -275,9 +277,10 @@ void load_fastq_conc(const char *filename, std::vector<char>& Text, uint_s& sum,
     // close stream
     input.close();
 }
-// function to load a new line separated file
+
+// function to load file as a single text
 template<typename uint_s>
-void load_nls_conc(const char *filename, std::vector<uint8_t>& Text, uint_s& sum, uint_s& ns){
+void load_text(const char *filename, std::vector<char>& Text, uint_s& size){
     // open the input stream
     std::ifstream input(filename);
     if(!input.good()) { // exit if we cannot open the stream
@@ -286,37 +289,22 @@ void load_nls_conc(const char *filename, std::vector<uint8_t>& Text, uint_s& sum
     }
     // resize the input vector
     input.seekg(0, std::ios::end);
-    Text.resize(input.tellg());
+    size = input.tellg();
+    std::cout << size << std::endl;
+    Text.resize(size);
+    std::cout << size << std::endl;
     input.seekg(0, std::ios::beg);
     // check input file size
     #if M64 == 0
         // if we are in 32 bit mode, check that parse has less than 2^32-2 words
         if(Text.size() > pow(2,32) - 1){ 
             // the input file is too big
-            std::cerr << "Error, the file size is > 4GB, please use ./bwtvartool64. exiting..." << std::endl;
+            std::cerr << "Error, the file size is > 4.29 GB, please use ./optsais64. exiting..." << std::endl;
             exit(-1);
         }
     #endif 
-    // start reading line by line
-    std::string line;
-    sum = 0, ns = 0;
-    while(std::getline(input, line)) {
-        // skip empty lines
-        if(line.empty()){ continue; }
-        // increase sequence count
-        ns++;
-        // compute line length 
-        size_t seqlen = line.size();
-        // copy new sequence in Text
-        memcpy(&Text[sum],&line[0],seqlen);
-        // increase current text size
-        sum += seqlen;
-        // add separator
-        Text[sum++] = 1;
-    }
-    // resize Text to the correct size
-    Text.resize(sum);
-    Text.shrink_to_fit();
+    // read all the file
+    input.read(reinterpret_cast<char*>(&Text[0]), size); 
     // close stream
     input.close();
 }

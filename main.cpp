@@ -2,6 +2,19 @@
 #include <iostream>
 #include <getopt.h>
 
+/*
+Description:
+Tool for computing the optimal BWT (optBWT), the SAP-array, and the input order BWT
+using the optimal SAIS algorithm (optSAIS).
+   "Computing the optimal BWT of very large string collections"
+   by Davide Cenzato, Veronica Guerrini, Zsuzsanna Lipták, and Giovanna Rosone
+   submitted paper 
+   
+The input file cannot contain the characters < 2 which are used internally by the algorithm.
+Input file smaller than 4.29 GB will take 5n + n/8 bytes in RAM, while input files larger than
+4.29 GB will take 9n + n/8 bytes.
+*/
+
 #include "computeTransform.h"
 #include "external/malloc_count/malloc_count.h" // memory counter
 
@@ -9,11 +22,12 @@
 void print_help(char** argv) {
   std::cout << "Usage: " << argv[ 0 ] << " <input filename> [options]" << std::endl;
   std::cout << "  Options: " << std::endl
-        << "\t-e \tconstruct the BWT (input order), def. True " << std::endl
+        << "\t-p \tconstruct the optimalBWT, def. True " << std::endl
         << "\t-d \tconstruct the BWT (input order) and SAP-array, def. False " << std::endl
-        << "\t-p \tconstruct the optimalBWT, def. False " << std::endl
+        << "\t-e \tconstruct the BWT (input order), def. True " << std::endl
         << "\t-f \ttake in input a fasta file, def. True " << std::endl
         << "\t-q \ttake in input a fastq file, def. False " << std::endl 
+        << "\t-v \tset verbose mode, def. False " << std::endl
         << "\t-o O\tbasename for the output files, def. <input filename>" << std::endl;
 
   exit(-1);
@@ -29,15 +43,15 @@ void parseArgs( int argc, char** argv, Args& arg ) {
   puts("");
  
   std::string sarg;
-  while ((c = getopt( argc, argv, "edpfqsho:n") ) != -1) {
+  while ((c = getopt( argc, argv, "edpfqho:v") ) != -1) {
     switch(c) {
-      case 'e':
+      case 'p':
         arg.variant = 0; break;
         // compute the ebwt
-      case 'd':
+      case 'e':
         arg.variant = 1; break;
         // compute the dollar ebwt
-      case 'p':
+      case 'd':
         arg.variant = 2; break;
         // compute the optimal bwt
       case 'f':
@@ -46,12 +60,9 @@ void parseArgs( int argc, char** argv, Args& arg ) {
       case 'q':
         arg.format = 1; break;
         // take in input a fastq file
-      case 'n':
-        arg.format = 2; break;
-        // take in input a nls file
-      case 's':
-        arg.format = true; break;
-        // write the suffix array
+      case 'v':
+        arg.verbose = true; break;
+        // verbose mode
       case 'o':
         sarg.assign( optarg );
         arg.outname.assign( sarg ); break;
@@ -82,22 +93,23 @@ int main(int argc, char** argv)
   Args arg;
   parseArgs(argc, argv, arg);
   
-  // select what to compute
+  // select the BWT variant to compute
   switch(arg.variant) {
     case 0:
-      std::cout << "Computing the BWT (input order) : " << arg.filename << std::endl;
-      compute_bwt_unsigned(arg);
+      if(arg.verbose) std::cout << "Computing the optimal BWT of : " << arg.filename << std::endl; 
+      compute_optbwt(arg);
       break;
     case 1:
-      std::cout << "Computing the BWT (input order) and SAP-array of : " << arg.filename << std::endl;
-      compute_bwt_sap_unsigned(arg);
+      if(arg.verbose) std::cout << "Computing the BWT (input order) : " << arg.filename << std::endl; 
+      compute_bwt(arg);
       break;
     case 2:
-      std::cout << "Computing the optimal BWT of : " << arg.filename << std::endl;
-      compute_optbwt_unsigned(arg);
+      if(arg.verbose) std::cout << "Computing the BWT (input order) and SAP-array of : " << arg.filename << std::endl;
+      compute_bwt_sap(arg);
       break;
     default:
-      std::cout << "error" << std::endl;
+      std::cout << "Error! select a valid BWT variant. exiting..." << std::endl;
+      exit(1);
   }
 
   return 0;

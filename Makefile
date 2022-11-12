@@ -1,9 +1,6 @@
 # compilation flags
 CXX_FLAGS=-std=c++11 -O3 -Wall -Wextra -pedantic -g
-#CXX_FLAGS=-std=c++11 -O3 -Wall -Wextra -pedantic -fsanitize=address -fno-omit-frame-pointer -g
-CFLAGS=-O3 -Wall -std=c99 -g
-CC=gcc
-CCX=g++
+CXX=g++
 
 # main executables 
 EXECS = optsais optsais64 permute
@@ -14,19 +11,19 @@ EXECS = optsais optsais64 permute
 all: $(EXECS)
 
 lib/optsais32.o: lib/optSAIS.cpp lib/optSAIS.h
-	$(CCX) $(CXX_FLAGS) -c -o $@ $< 
+	$(CXX) $(CXX_FLAGS) -c -o $@ $< 
 
 lib/optsais64.o: lib/optSAIS.cpp lib/optSAIS.h
-	$(CCX) $(CXX_FLAGS) -c -o $@ $< -DM64
+	$(CXX) $(CXX_FLAGS) -c -o $@ $< -DM64
 
-optsais: main.cpp common.hpp computeTransform.cpp external/malloc_count/malloc_count.o lib/optsais32.o 
-	$(CXX) $(CXX_FLAGS) -o $@ main.cpp common.hpp computeTransform.cpp external/malloc_count/malloc_count.o lib/optsais32.o -ldl #-fsanitize=address
+optsais: main.cpp IOfunc.hpp computeTransform.cpp external/malloc_count/malloc_count.o lib/optsais32.o 
+	$(CXX) $(CXX_FLAGS) -o $@ main.cpp IOfunc.hpp computeTransform.cpp external/malloc_count/malloc_count.o lib/optsais32.o -ldl
 
-optsais64: main.cpp common.hpp computeTransform.cpp external/malloc_count/malloc_count.o lib/optsais64.o 
-	$(CXX) $(CXX_FLAGS) -o $@ main.cpp common.hpp computeTransform.cpp external/malloc_count/malloc_count.o lib/optsais64.o  -ldl -DM64 
+optsais64: main.cpp IOfunc.hpp computeTransform.cpp external/malloc_count/malloc_count.o lib/optsais64.o 
+	$(CXX) $(CXX_FLAGS) -o $@ main.cpp IOfunc.hpp computeTransform.cpp external/malloc_count/malloc_count.o lib/optsais64.o  -ldl -DM64 
 
 permute: permuteBWT.cpp external/malloc_count/malloc_count.o 
-	$(CXX) $(CXX_FLAGS) -o $@ permuteBWT.cpp external/malloc_count/malloc_count.o -ldl #-fsanitize=address
+	$(CXX) $(CXX_FLAGS) -o $@ permuteBWT.cpp external/malloc_count/malloc_count.o -ldl 
 
 clean:
-	rm -f $(EXECS) $(EXECS_NT) lib/*.o  
+	rm -f $(EXECS) $(EXECS_NT) lib/*.o external/malloc_count/*.o

@@ -1,6 +1,7 @@
 #include "computeTransform.h"
 
-// empty all Stack and write the content in BWTblock vector
+// function to compute the optimal permutation of the BWT characters 
+// contained in the Parikh vectors of the stack
 void permute_stack(std::stack< uint_t* > &Stack, std::vector< std::pair <char,uint_t> > &BWTblock){
     // extract the first element
     size_t i;
@@ -46,7 +47,7 @@ void permute_stack(std::stack< uint_t* > &Stack, std::vector< std::pair <char,ui
     delete[] prev;
 }
 
-// write the BWT runs in BWTblock vector
+// function to write a run-length encoded BWT block to file
 void write_block(std::vector< std::pair <char,uint_t> > &BWTblock, uint8_t* BWT, uint_t &cnt, int &last){
     // initialize variables
     int64_t i, rep;
@@ -64,7 +65,9 @@ void write_block(std::vector< std::pair <char,uint_t> > &BWTblock, uint8_t* BWT,
     BWTblock.clear();
 }
 
-void permute_bwt_unsigned(std::vector<char> &Text, std::vector<uint_t> &SA, std::vector<uint8_t> &I,
+// function that takes in input the BWT (computed from Text and SA) and
+// the SAP-array in order to compute the optimal BWT
+void permute_bwt(std::vector<char> &Text, std::vector<uint_t> &SA, std::vector<uint8_t> &SAP,
                           std::string basename, uint_t n){
 
     // initialize stack data strcture
@@ -200,8 +203,67 @@ void permute_bwt_unsigned(std::vector<char> &Text, std::vector<uint_t> &SA, std:
     fclose(obwt);
 }
 
-// write the BWT and SAP array to file
-void write_bwt_sap(std::vector<char> &Text, std::vector<uint_t> &SA, std::vector<uint8_t> &I,
+
+// function for constructing and storing the optimal BWT of a string collection
+void compute_optbwt(Args arg){ 
+    // initialize starting time
+    auto start = std::chrono::steady_clock::now();
+    // input text initialization
+    std::vector<char> Text;
+    //std::stack< std::array<uint_s,alph_size>* > Stack;
+    uint_t n=0, ns=0;
+    // initialize output basename
+    std::string basename = arg.outname;
+    // initialize boolean values
+    int format = arg.format;
+    ////bool printsa = arg.sa;
+    // read input
+    switch(format) {
+        case 0:
+            //std::cout << "load fasta file" << std::endl;
+            // load a fasta file
+            load_fasta_conc(arg.filename.c_str(),Text,n,ns);
+            break;
+        case 1:
+            // load a fastq file
+            load_fastq_conc(arg.filename.c_str(),Text,n,ns);
+            break;
+        default:
+            std::cerr << "error! please select a valid format." << std::endl;
+            exit(-1);
+    }
+    // initialize the circular Suffix array
+    std::vector<uint_t> SA(n,0);
+    // initialize the SAP-array
+    std::vector<uint8_t> SAP((n/8)+1,0);
+    // compute the suffix array
+    optsais_sa_sap(&Text[0], &SA[0], &SAP[0], n, ns, alph_size);
+
+    auto end = std::chrono::steady_clock::now();
+    if(arg.verbose){
+    std::cout << "SA and SAP-array construction: Elapsed time in seconds: "
+        << std::chrono::duration_cast<std::chrono::seconds>(end - start).count()
+        << " milliseconds" << std::endl;
+    start = std::chrono::steady_clock::now(); }
+
+    // permute the BWT characters using the Bentley et al. algorithm
+    permute_bwt(Text, SA, SAP, basename, n);
+
+    end = std::chrono::steady_clock::now();
+    if(arg.verbose){
+    std::cout << "optimal BWT computation: Elapsed time in seconds: "
+        << std::chrono::duration_cast<std::chrono::seconds>(end - start).count()
+        << " milliseconds" << std::endl; }
+
+    // free memory
+    Text.clear();
+    SA.clear();
+    SAP.clear();
+}
+
+// given the Text and the Suffix array write the BWT
+// and the SAP-array to file
+void write_bwt_sap(std::vector<char> &Text, std::vector<uint_t> &SA, std::vector<uint8_t> &SAP,
                    std::string basename, uint_t n){
 
     // intialize variables
@@ -212,7 +274,7 @@ void write_bwt_sap(std::vector<char> &Text, std::vector<uint_t> &SA, std::vector
 
     uint8_t* ptr = (uint8_t*)&SA[0];
 
-    bwtfile = basename + std::string(".mdollarbwt");
+    bwtfile = basename + std::string(".inputbwt");
     sapfile = basename + std::string(".sap");
     // open output files
     if((bwt = fopen(bwtfile.c_str(), "w+")) == nullptr){
@@ -232,17 +294,74 @@ void write_bwt_sap(std::vector<char> &Text, std::vector<uint_t> &SA, std::vector
         b = iget(i);
         putc(b, sap); 
     }
-    if(fwrite(ptr, sizeof(char), n, bwt)!=n){ std::cerr << "grossi errori" << std::endl; exit(1); }
+    if(fwrite(ptr, sizeof(char), n, bwt) !=n ){ std::cerr << "Error writing in the BWT file! exiting..." << std::endl; exit(1); }
     // close output files
     fclose(bwt);
     fclose(sap);
 }
 
-// write the BWT to file
+// function for constructing and storing the input order BWT and the SAP-array
+// of a string collection
+void compute_bwt_sap(Args arg){ 
+    // initialize starting time
+    auto start = std::chrono::steady_clock::now();
+    // input text initialization
+    std::vector<char> Text;
+    //std::stack< std::array<uint_s,alph_size>* > Stack;
+    uint_t n=0, ns=0;
+    // initialize output basename
+    std::string basename = arg.outname;
+    // initialize boolean values
+    int format = arg.format;
+    ////bool printsa = arg.sa;
+    // read input
+    switch(format) {
+        case 0:
+            //std::cout << "load fasta file" << std::endl;
+            // load a fasta file
+            load_fasta_conc(arg.filename.c_str(),Text,n,ns);
+            break;
+        case 1:
+            // load a fastq file
+            load_fastq_conc(arg.filename.c_str(),Text,n,ns);
+            break;
+        default:
+            std::cerr << "error! please select a valid format." << std::endl;
+            exit(1);
+    }
+    // initialize the circular Suffix array
+    std::vector<uint_t> SA(n,0);
+    // initialize the SAP-array
+    std::vector<uint8_t> SAP((n/8)+1,0);
+    // compute the suffix array
+    optsais_sa_sap(&Text[0], &SA[0], &SAP[0], n, ns, alph_size);
+    
+    auto end = std::chrono::steady_clock::now();
+    if(arg.verbose){
+    std::cout << "SA and SAP-array construction: Elapsed time in seconds: "
+        << std::chrono::duration_cast<std::chrono::seconds>(end - start).count()
+        << " milliseconds" << std::endl; }
+
+    // permute the BWT characters using the Bentley et al. algorithm
+    start = std::chrono::steady_clock::now();
+    write_bwt_sap(Text, SA, SAP, basename, n);
+    end = std::chrono::steady_clock::now();
+    if(arg.verbose){
+    std::cout << "Writing BWT and SAP: Elapsed time in seconds: "
+        << std::chrono::duration_cast<std::chrono::seconds>(end - start).count()
+        << " milliseconds" << std::endl; }
+
+    // free memory
+    Text.clear();
+    SA.clear();
+    SAP.clear();
+}
+
+// given the Text and the Suffix array write the BWT to file
 void write_bwt(std::vector<char> &Text, std::vector<uint_t> &SA, std::string basename, uint_t n){
 
     // intialize variables
-    char j, b;
+    char j;
     // initalize output files
     std::string bwtfile, sapfile;
     FILE *bwt;
@@ -267,121 +386,9 @@ void write_bwt(std::vector<char> &Text, std::vector<uint_t> &SA, std::string bas
     fclose(bwt);
 }
 
-// function for constructing and storing the optimalBWT of a string collection
-// light version
-void compute_optbwt_unsigned(Args arg){ 
-    // initialize starting time
-    auto start = std::chrono::steady_clock::now();
-    // input text initialization
-    std::vector<char> Text;
-    //std::stack< std::array<uint_s,alph_size>* > Stack;
-    uint_t n=0, ns=0;
-    // initialize output basename
-    std::string basename = arg.outname;
-    // initialize boolean values
-    int format = arg.format;
-    ////bool printsa = arg.sa;
-    // read input
-    switch(format) {
-        case 0:
-            //std::cout << "load fasta file" << std::endl;
-            // load a fasta file
-            load_fasta_conc(arg.filename.c_str(),Text,n,ns);
-            break;
-        case 1:
-            // load a fastq file
-            load_fastq_conc(arg.filename.c_str(),Text,n,ns);
-            break;
-        default:
-            std::cerr << "error! please select a valid format." << std::endl;
-            exit(-1);
-    }
-    // initialize the circular Suffix array
-    std::vector<uint_t> SA(n,0);
-    // initialize the SAP-array
-    std::vector<uint8_t> I((n/8)+1,0);
-    // compute the suffix array
-    optsais_unsigned_sa_sap(&Text[0], &SA[0], &I[0], n, ns, alph_size, 1);
-
-    auto end = std::chrono::steady_clock::now();
-    std::cout << "Constructing the SA: Elapsed time in seconds: "
-        << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-        << " milliseconds" << std::endl;
-    start = std::chrono::steady_clock::now();
-
-    // permute the BWT characters using the Bentley et al. algorithm
-    permute_bwt_unsigned(Text, SA, I, basename, n);
-
-    end = std::chrono::steady_clock::now();
-    std::cout << "Permuting the characters: Elapsed time in seconds: "
-        << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-        << " milliseconds" << std::endl;
-
-    // free memory
-    Text.clear();
-    SA.clear();
-    I.clear();
-}
-
-
-// function for constructing and storing the optimalBWT of a string collection
-// light version
-void compute_bwt_sap_unsigned(Args arg){ 
-    // initialize starting time
-    auto start = std::chrono::steady_clock::now();
-    // input text initialization
-    std::vector<char> Text;
-    //std::stack< std::array<uint_s,alph_size>* > Stack;
-    uint_t n=0, ns=0;
-    // initialize output basename
-    std::string basename = arg.outname;
-    // initialize boolean values
-    int format = arg.format;
-    ////bool printsa = arg.sa;
-    // read input
-    switch(format) {
-        case 0:
-            //std::cout << "load fasta file" << std::endl;
-            // load a fasta file
-            load_fasta_conc(arg.filename.c_str(),Text,n,ns);
-            break;
-        case 1:
-            // load a fastq file
-            load_fastq_conc(arg.filename.c_str(),Text,n,ns);
-            break;
-        default:
-            std::cerr << "error! please select a valid format." << std::endl;
-            exit(-1);
-    }
-    // initialize the circular Suffix array
-    std::vector<uint_t> SA(n,0);
-    // initialize the SAP-array
-    std::vector<uint8_t> I((n/8)+1,0);
-    // compute the suffix array
-    optsais_unsigned_sa_sap(&Text[0], &SA[0], &I[0], n, ns, alph_size, 1);
-    
-    auto end = std::chrono::steady_clock::now();
-    std::cout << "Constructing the SA: Elapsed time in seconds: "
-        << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-        << " milliseconds" << std::endl;
-
-    // permute the BWT characters using the Bentley et al. algorithm
-    start = std::chrono::steady_clock::now();
-    write_bwt_sap(Text, SA, I, basename, n);
-    end = std::chrono::steady_clock::now();
-    std::cout << "Writing BWT and SAP: Elapsed time in seconds: "
-        << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-        << " milliseconds" << std::endl;
-
-    // free memory
-    Text.clear();
-    SA.clear();
-    I.clear();
-}
-
-// function for constructing and storing the optimalBWT of a string collection
-// light version
-void compute_bwt_unsigned(Args arg){ 
+// function for constructing and storing the input order BWT of 
+// a string collection
+void compute_bwt(Args arg){ 
     // initialize starting time
     auto start = std::chrono::steady_clock::now();
     // input text initialization
@@ -410,19 +417,21 @@ void compute_bwt_unsigned(Args arg){
     // initialize the circular Suffix array
     std::vector<uint_t> SA(n,0);
     // compute the suffix array
-    optsais_unsigned_sa(&Text[0], &SA[0], n, ns, alph_size, 1);
+    optsais_sa(&Text[0], &SA[0], n, ns, alph_size);
     auto end = std::chrono::steady_clock::now();
-    std::cout << "Constructing the SA: Elapsed time in seconds: "
-        << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-        << " milliseconds" << std::endl;
+    if(arg.verbose){
+    std::cout << "SA construction: Elapsed time in seconds: "
+        << std::chrono::duration_cast<std::chrono::seconds>(end - start).count()
+        << " milliseconds" << std::endl; }
 
     // permute the BWT characters using the Bentley et al. algorithm
     start = std::chrono::steady_clock::now();
     write_bwt(Text, SA, basename, n);
     end = std::chrono::steady_clock::now();
+    if(arg.verbose){
     std::cout << "Writing BWT: Elapsed time in seconds: "
-        << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-        << " milliseconds" << std::endl;
+        << std::chrono::duration_cast<std::chrono::seconds>(end - start).count()
+        << " milliseconds" << std::endl; }
 
     // free memory
     Text.clear();
