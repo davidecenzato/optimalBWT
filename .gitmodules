@@ -1,3 +1,6 @@
 [submodule "external/malloc_count"]
 	path = external/malloc_count
 	url = https://github.com/bingmann/malloc_count.git
+[submodule "external/BCR_LCP_GSA"]
+	path = external/BCR_LCP_GSA
+	url = https://github.com/giovannarosone/BCR_LCP_GSA.git

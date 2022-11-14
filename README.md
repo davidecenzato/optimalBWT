@@ -1,24 +1,35 @@
 # optimalBWT
-optimalBWT is a tool that computes the optimal BWT using the optSAIS and BCR algorithms.
+optimalBWT is a tool that computes the optimal BWT using either a SAIS- or BCR-based algorithm.
 
 # Usage
 
 ```
-Usage: ./optsais <input filename> [options]
-  Options:
-        -p      construct the optimalBWT, def. True
-        -d      construct the BWT (input order) and SAP-array, def. False
-        -e      construct the BWT (input order), def. True
-        -f      take in input a fasta file, def. True
-        -q      take in input a fastq file, def. False
-        -v      set verbose mode, def. False
-        -o O    basename for the output files, def. <input filename>
+usage: optimalBWT.py [-h] [-a ALGORITHM] [-f] [-q] [-v] [-o OUTPUT] [-b BUFFER] input
+
+optimal BWT is a tool that computes the optimal BWT of string collections.
+
+positional arguments:
+  input                 input file name
+
+options:
+  -h, --help            show this help message and exit
+  -a ALGORITHM, --algorithm ALGORITHM
+                        select which algorithm to use ((sais | bcr) def. sais)
+  -f, --fasta           take in input a fasta file (sais only, def. True)
+  -q, --fastq           take in input a fastq file (sais only, def. False)
+  -v, --verbose         verbose (def. False)
+  -o OUTPUT, --output OUTPUT
+                        output file path (def. input)
+  -b BUFFER, --buffer BUFFER
+                        set memory buffer size in MB (BCR only, def. 10)
 ```
 When computing the optimalBWT you can choose your input format between fasta and fastq format, and set a path for the output.
+When using the BCR-based algorithm you can choose the size of the input buffer for the algorithm permuting the characters in the SAP-intervals.
 
 ### Requirements
 
-The optimalBWT tool requires:
+The optimalBWT tool requires
+* A modern Python 3 release version 3.7 or higher.
 * A modern C++11 compiler such as `g++` version 4.9 or higher.
 
 # Example
@@ -30,23 +41,28 @@ git clone https://github.com/davidecenzato/optimalBWT.git
 cd optimalBWT
 git submodule update --init --recursive
 
+cd external/BCR_LCP_GSA/
+cp ../../Parameters.h ./
+make
+
+cd ../../
 make
 ```
 
 ### Run on Example Data
 
 ```console
-// Construct the optimal BWT of fasta file using the optSAIS algorithm
-./optsais file.fasta -p -f -v
+// Construct the optimal BWT of fasta file using the SAIS-based algorithm
+python3 input.fasta --algorithm sais --fasta --verbose 
 
-// Compute the input order BWT and the SAP-array, then run Bentley et al. algorithm
-./ optsais file.fasta -d -f -v
-./ permute file.fasta.inputbwt file.fasta.sap 10
+// Construct the optimal BWT of fasta file using the BCR-based algorithm
+python3 input.fasta --algorithm bcr --verbose -b 10
 ```
 
 # External resources
 
 * [malloc_count](https://github.com/bingmann/malloc_count)
+* [BCR_LCP_GSA](https://github.com/giovannarosone/BCR_LCP_GSA.git)
 
 # Citation 
 
@@ -59,7 +75,7 @@ If you use this tool in an academic setting, please cite this work as follows:
                    {\relax Zs}uzsanna Lipt{\'{a}}k and
                    Giovanna Rosone},
       title     = {Computing the optimal BWT of very large string collections},
-      booktitle = {Submitted for revision at DCC 2023},
+      booktitle = {Submitted for revision},
       year      = {2022}
     }
 
@@ -76,7 +92,3 @@ If you use this tool in an academic setting, please cite this work as follows:
 
 * Davide Cenzato
 * Veronica Guerrini
-
-### Implementation:
-
-* [Davide Cenzato](https://github.com/davidecenzato) 
