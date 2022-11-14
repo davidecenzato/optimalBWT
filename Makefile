@@ -3,10 +3,10 @@ CXX_FLAGS=-std=c++11 -O3 -Wall -Wextra -pedantic -g
 CXX=g++
 
 # main executables 
-EXECS = optsais optsais64 permute
+EXECS = optsais optsais64 permute 
 
 # targets not producing a file declared phony
-.PHONY: all clean
+.PHONY: all clean install_bcr
 
 all: $(EXECS)
 
@@ -27,3 +27,7 @@ permute: permuteBWT.cpp external/malloc_count/malloc_count.o
 
 clean:
 	rm -f $(EXECS) $(EXECS_NT) lib/*.o external/malloc_count/*.o
+
+install_bcr:
+	cp Parameters.h external/BCR_LCP_GSA/
+	make -C external/BCR_LCP_GSA/

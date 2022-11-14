@@ -41,11 +41,7 @@ git clone https://github.com/davidecenzato/optimalBWT.git
 cd optimalBWT
 git submodule update --init --recursive
 
-cd external/BCR_LCP_GSA/
-cp ../../Parameters.h ./
-make
-
-cd ../../
+make -C external/BCR_LCP_GSA/ SAP=1
 make
 ```
 

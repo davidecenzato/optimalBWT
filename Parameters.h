@@ -132,11 +132,11 @@ typedef unsigned long ulong;
     #define USE_QS 0             //if you want to build QS permutation from fasta and qs file, please set USE_QS to 1
 #endif
 
+#define BUILD_SAP 1
+#define BCR_SET_ALN_RH 1
+
 //Use kseq to read sequences
 #define KSEQ_PARSER 1
-
-//if you want to compute the SAP array, please set it to 1
-#define BUILD_SAP 1
 
 //if you want to compute the LCP array, please set it to 1
 #define BUILD_LCP 0
@@ -162,10 +162,6 @@ typedef unsigned long ulong;
 //if BCR_SET=1 then BCR computes the EBWT (the input is a set) (one can have strings of different length, so BCR uses the symbol TERMINATE_CHAR_LEN) 
 //if BCR_SET=0 then BCR computes the BWT (the input is a single sequence)
 #define BCR_SET 1				
-
-//if BCR_SET_ALN_RH=0 then BCR computes the EBWT (the input is a set) aligning strings left 
-//if BCR_SET_ALN_RH=1 then BCR computes the EBWT (the input is a set) aligning strings right 
-#define BCR_SET_ALN_RH 1
 
 //if BCR_INPUT_IN_MEMORY==1, BCR loads the input file in a string and compute the BWT of the string (it computes the BWT of the reverse string),  
 //if BCR_INPUT_IN_MEMORY==0, BCR reads from files (cyc files)

@@ -15,24 +15,22 @@ permute_exe    =  os.path.join(dirname, "permute")
 def main():
     parser = argparse.ArgumentParser(description=Description, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('input',             help='input file name', type=str)
+    parser.add_argument('output',            help='output file name', type=str)
     parser.add_argument('-a', '--algorithm', help='select which algorithm to use ((sais | bcr) def. sais)', default="sais", type=str)
     parser.add_argument('-f', '--fasta',     help='take in input a fasta file (sais only, def. True)', action='store_true')
     parser.add_argument('-q', '--fastq',     help='take in input a fastq file (sais only, def. False)', action='store_true')
     parser.add_argument('-v', '--verbose',   help='verbose (def. False)',action='store_true')
-    parser.add_argument('-o', '--output',    help='output file path (def. input)', default="", type=str)
     parser.add_argument('-b', '--buffer',    help='set memory buffer size in MB (BCR only, def. 10)', default=10, type=str)
     args = parser.parse_args()
 
     logfile_name = args.input + ".log"
-    # get main bigbwt directory
+    # get main optbwt directory
     args.optbwt_dir = os.path.split(sys.argv[0])[0]
     print("Sending logging messages to file:", logfile_name)
     with open(logfile_name,"a") as logfile:
 
         # ---------- start computation #
         start = time.time()
-        # check output file path
-        if( args.output == "" ): args.output = args.input
         # ---------- SAIS based algorithm #
         if args.algorithm == "sais":
             file_size = os.path.getsize(args.input)
