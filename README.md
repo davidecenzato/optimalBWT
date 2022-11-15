@@ -40,17 +40,16 @@ cd optimalBWT
 git submodule update --init --recursive
 
 make
-make install_bcr
 ```
 
 ### Run on Example Data
 
 ```console
 // Construct the optimal BWT of fasta file using the SAIS-based algorithm
-python3 input.fasta output --algorithm sais --fasta --verbose 
+python3 optimalBWT.py input.fasta output --algorithm sais --fasta --verbose 
 
 // Construct the optimal BWT of fasta file using the BCR-based algorithm
-python3 input.fasta output --algorithm bcr --verbose -b 10
+python3 optimalBWT.py input.fasta output --algorithm bcr --verbose -b 10
 ```
 
 # External resources
