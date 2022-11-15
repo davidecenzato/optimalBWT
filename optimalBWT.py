@@ -74,6 +74,7 @@ def main():
                 return
             if(args.verbose): print("Elapsed time: {0:.4f}".format(time.time()-start))
             if(args.verbose): print("Remove temporary files.")
+            os.rename(args.output+".ebwt.optbwt",args.output+".optbwt")
             os.remove(args.output+".ebwt")
             os.remove(args.output+".bwt.sap")
 
