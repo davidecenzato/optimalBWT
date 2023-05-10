@@ -62,14 +62,14 @@ python3 optimalBWT.py input.fasta output --algorithm bcr --verbose -b 10
 If you use this tool in an academic setting, please cite this work as follows:
 
 ### optimalBWT
-    @unpublished  {optBWT,
+    @inproceedings{CenzatoGLR23,
       author    = {Davide Cenzato and
                    Veronica Guerrini and
                    {\relax Zs}uzsanna Lipt{\'{a}}k and
                    Giovanna Rosone},
       title     = {Computing the optimal BWT of very large string collections},
-      booktitle = {Submitted for revision},
-      year      = {2022}
+      booktitle = {To appear in Proc. of 33rd Data Compression Conference, {DCC} 2023},
+      year      = {2023}
     }
 
 # Authors
