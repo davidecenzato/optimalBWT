@@ -16,11 +16,11 @@ lib/optsais32.o: lib/optSAIS.cpp lib/optSAIS.h
 lib/optsais64.o: lib/optSAIS.cpp lib/optSAIS.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $< -DM64
 
-optsais: main.cpp IOfunc.hpp computeTransform.cpp external/malloc_count/malloc_count.o lib/optsais32.o 
-	$(CXX) $(CXX_FLAGS) -o $@ main.cpp IOfunc.hpp computeTransform.cpp external/malloc_count/malloc_count.o lib/optsais32.o -ldl
+optsais: main.cpp computeTransform.cpp external/malloc_count/malloc_count.o lib/optsais32.o 
+	$(CXX) $(CXX_FLAGS) -o $@ main.cpp computeTransform.cpp external/malloc_count/malloc_count.o lib/optsais32.o -ldl
 
-optsais64: main.cpp IOfunc.hpp computeTransform.cpp external/malloc_count/malloc_count.o lib/optsais64.o 
-	$(CXX) $(CXX_FLAGS) -o $@ main.cpp IOfunc.hpp computeTransform.cpp external/malloc_count/malloc_count.o lib/optsais64.o  -ldl -DM64 
+optsais64: main.cpp computeTransform.cpp external/malloc_count/malloc_count.o lib/optsais64.o 
+	$(CXX) $(CXX_FLAGS) -o $@ main.cpp computeTransform.cpp external/malloc_count/malloc_count.o lib/optsais64.o  -ldl -DM64 
 
 bcr:
 	make -C external/BCR_LCP_GSA/ SAP=1
