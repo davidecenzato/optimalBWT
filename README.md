@@ -57,21 +57,6 @@ python3 optimalBWT.py input.fasta output --algorithm bcr --verbose -b 10
 * [malloc_count](https://github.com/bingmann/malloc_count)
 * [BCR_LCP_GSA](https://github.com/giovannarosone/BCR_LCP_GSA.git)
 
-# Citation 
-
-If you use this tool in an academic setting, please cite this work as follows:
-
-### optimalBWT
-    @inproceedings{CenzatoGLR23,
-      author    = {Davide Cenzato and
-                   Veronica Guerrini and
-                   {\relax Zs}uzsanna Lipt{\'{a}}k and
-                   Giovanna Rosone},
-      title     = {Computing the optimal BWT of very large string collections},
-      booktitle = {To appear in Proc. of 33rd Data Compression Conference, {DCC} 2023},
-      year      = {2023}
-    }
-
 # Authors
 
 ### Theoretical results:
@@ -85,3 +70,22 @@ If you use this tool in an academic setting, please cite this work as follows:
 
 * Davide Cenzato
 * Veronica Guerrini
+
+# Reference and citation 
+
+[1] Davide Cenzato, Veronica Guerrini, Zsuzsanna Lipták, Giovanna Rosone: Computing the optimal BWT of very large string collections. DCC 2023: 71-80 ([go to the paper](https://doi.org/10.1109/DCC55655.2023.00015))
+
+If you use optimalBWT in an academic setting, please cite this work as follows:
+
+### optimalBWT
+    @inproceedings{CenzatoGLR23,
+      author       = {Davide Cenzato and
+                      Veronica Guerrini and
+                      Zsuzsanna Lipt{\'{a}}k and
+                      Giovanna Rosone},
+      title        = {Computing the optimal {BWT} of very large string collections},
+      booktitle    = {In Proc. of the 33rd Data Compression Conference, {DCC} 2023, 2023},
+      pages        = {71--80},
+      year         = {2023},
+      doi          = {10.1109/DCC55655.2023.00015}
+    }
