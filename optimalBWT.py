@@ -67,7 +67,7 @@ def main():
                 return
             # permute characters
             if(args.verbose): print("Permuting the BWT characters.")
-            command = "{exe} {bwt} {sap} {buffer}".format(exe = permute_exe, bwt = args.output+".ebwt", sap = args.output+".bwt.sap",
+            command = "{exe} {bwt} {sap} {buffer}".format(exe = permute_exe, bwt = args.output+".ebwt", sap = args.output+".bwt.red_sap",
                                                           buffer = args.buffer)
             if(args.verbose): print(command)
             if(execute_command(command,logfile,logfile_name)!=True):
@@ -76,7 +76,7 @@ def main():
             if(args.verbose): print("Remove temporary files.")
             os.rename(args.output+".ebwt.optbwt",args.output+".optbwt")
             os.remove(args.output+".ebwt")
-            os.remove(args.output+".bwt.sap")
+            os.remove(args.output+".bwt.red_sap")
 
 # execute command: return True is everything OK, False otherwise
 def execute_command(command,logfile,logfile_name,env=None):
