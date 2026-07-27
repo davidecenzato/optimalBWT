@@ -1,5 +1,7 @@
 # optimalBWT
-optimalBWT is a tool that computes the optimal BWT using either a SAIS- or BCR-based algorithm.
+
+optimalBWT is a tool that computes the optimal BWT using either a SAIS- or BCR-based algorithm. \
+To compute the r-index on top of the optimal BWT and download the benchmark data, see the [optimal-r-index](https://github.com/davidecenzato/optimal-r-index) repository.
 
 # Usage
 
