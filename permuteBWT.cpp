@@ -2,6 +2,7 @@
 #include <fstream>
 #include <vector>
 #include <stack>
+#include <cstdint>
 #include <algorithm>
 #include <cstring>
 #include <cassert>
