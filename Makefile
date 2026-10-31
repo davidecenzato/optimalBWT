@@ -3,7 +3,7 @@ CXX_FLAGS=-std=c++11 -O3 -Wall -Wextra -pedantic -g
 CXX=g++
 
 # main executables 
-EXECS = optsais optsais64 bcr permute 
+EXECS = optsais optsais64 bcr min-run-BWT 
 
 # targets not producing a file declared phony
 .PHONY: all clean
@@ -25,8 +25,8 @@ optsais64: main.cpp computeTransform.cpp external/malloc_count/malloc_count.o li
 bcr:
 	make -C external/BCR_LCP_GSA/ SAP=1
 	
-permute: permuteBWT.cpp external/malloc_count/malloc_count.o 
-	$(CXX) $(CXX_FLAGS) -o $@ permuteBWT.cpp external/malloc_count/malloc_count.o -ldl 
+min-run-BWT : min-run-BWT.cpp external/malloc_count/malloc_count.o 
+	$(CXX) $(CXX_FLAGS) -o $@ min-run-BWT.cpp external/malloc_count/malloc_count.o -ldl 
 
 clean:
 	rm -f $(EXECS) $(EXECS_NT) lib/*.o external/malloc_count/*.o

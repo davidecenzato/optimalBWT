@@ -10,7 +10,7 @@ dirname = os.path.dirname(os.path.abspath(__file__))
 optsais_exe    =  os.path.join(dirname, "optsais")
 optsais64_exe  =  os.path.join(dirname, "optsais64")
 bcr_exe        =  os.path.join(dirname, "external/BCR_LCP_GSA/BCR_LCP_GSA")
-permute_exe    =  os.path.join(dirname, "permute")
+permute_exe    =  os.path.join(dirname, "min-run-BWT")
 
 def main():
     parser = argparse.ArgumentParser(description=Description, formatter_class=argparse.RawTextHelpFormatter)

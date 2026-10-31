@@ -6,9 +6,8 @@
 Description:
 Tool for computing the optimal BWT (optBWT), the SAP-array, and the input order BWT
 using the optimal SAIS algorithm (optSAIS).
-   "Computing the optimal BWT of very large string collections"
-   by Davide Cenzato, Veronica Guerrini, Zsuzsanna Lipták, and Giovanna Rosone
-   submitted paper 
+    Davide Cenzato, Veronica Guerrini, Zsuzsanna Lipták, Giovanna Rosone:
+    Computing the optimal BWT of very large string collections. DCC 2023: 71-80
    
 The input file cannot contain the characters < 2 which are used internally by the algorithm.
 Input file smaller than 4.29 GB will take 5n + n/8 bytes in RAM, while input files larger than
@@ -18,7 +17,6 @@ Input file smaller than 4.29 GB will take 5n + n/8 bytes in RAM, while input fil
 #include "computeTransform.h"
 #include "external/malloc_count/malloc_count.h" // memory counter
 
-// function that prints the instructions for using the tool
 void print_help(char** argv) {
   std::cout << "Usage: " << argv[ 0 ] << " <input filename> [options]" << std::endl;
   std::cout << "  Options: " << std::endl
@@ -32,7 +30,7 @@ void print_help(char** argv) {
 
   exit(-1);
 }
-// function for parsing the input arguments
+
 void parseArgs( int argc, char** argv, Args& arg ) {
   int c;
   extern int optind;

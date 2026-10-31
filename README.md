@@ -31,6 +31,7 @@ When using the SAIS-based algorithm you can choose your input format between fas
 The optimalBWT tool requires
 * A modern Python 3 release version 3.7 or higher.
 * A modern C++11 compiler such as `g++` version 4.9 or higher.
+* A modern 64-bit Linux system (macOS is not currently supported).
 
 # Example
 
@@ -48,10 +49,10 @@ make
 
 ```console
 // Construct the optimal BWT of fasta file using the SAIS-based algorithm
-python3 optimalBWT.py input.fasta output --algorithm sais --fasta --verbose 
+python3 optimalBWT.py --algorithm sais --fasta --verbose input.fasta output
 
 // Construct the optimal BWT of fasta file using the BCR-based algorithm
-python3 optimalBWT.py input.fasta output --algorithm bcr --verbose -b 10
+python3 optimalBWT.py --algorithm bcr --verbose -b 10 input.fasta output
 ```
 
 # External resources
