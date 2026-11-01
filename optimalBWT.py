@@ -3,24 +3,24 @@
 import sys, time, argparse, subprocess, os.path
 
 Description = """
-optimal BWT is a tool that computes the optimal BWT of string collections.
+optimalBWT is a tool for computing the optimal BWT of string collections.
 """
 
 dirname = os.path.dirname(os.path.abspath(__file__))
 optsais_exe    =  os.path.join(dirname, "optsais")
 optsais64_exe  =  os.path.join(dirname, "optsais64")
 bcr_exe        =  os.path.join(dirname, "external/BCR_LCP_GSA/BCR_LCP_GSA")
-permute_exe    =  os.path.join(dirname, "min-run-BWT")
+min_run_exe    =  os.path.join(dirname, "min-run-BWT")
 
 def main():
     parser = argparse.ArgumentParser(description=Description, formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('input',             help='input file name', type=str)
-    parser.add_argument('output',            help='output file name', type=str)
-    parser.add_argument('-a', '--algorithm', help='select which algorithm to use ((sais | bcr) def. sais)', default="sais", type=str)
-    parser.add_argument('-f', '--fasta',     help='take in input a fasta file (sais only, def. True)', action='store_true')
-    parser.add_argument('-q', '--fastq',     help='take in input a fastq file (sais only, def. False)', action='store_true')
-    parser.add_argument('-v', '--verbose',   help='verbose (def. False)',action='store_true')
-    parser.add_argument('-b', '--buffer',    help='set memory buffer size in MB (BCR only, def. 10)', default=10, type=str)
+    parser.add_argument('input',             help='input file (FASTA or FASTQ)', type=str)
+    parser.add_argument('output',            help='output files basename', type=str)
+    parser.add_argument('-a', '--algorithm', help='algorithm to use: sais or bcr (default: sais)', default="sais", type=str)
+    parser.add_argument('-f', '--fasta',     help='input is a FASTA file (default)', action='store_true')
+    parser.add_argument('-q', '--fastq',     help='input is a FASTQ file (sais only)', action='store_true')
+    parser.add_argument('-v', '--verbose',   help='verbose output',action='store_true')
+    parser.add_argument('-b', '--buffer',    help='memory buffer size in MB (bcr only, default: 10)', default=10, type=str)
     args = parser.parse_args()
 
     logfile_name = args.input + ".log"
@@ -65,20 +65,20 @@ def main():
             if(args.verbose): print(command)
             if(execute_command(command,logfile,logfile_name)!=True):
                 return
-            # permute characters
-            if(args.verbose): print("Permuting the BWT characters.")
-            command = "{exe} {bwt} {sap} {buffer}".format(exe = permute_exe, bwt = args.output+".ebwt", sap = args.output+".bwt.red_sap",
+            # minimize the BWT runs
+            if(args.verbose): print("Minimizing the BWT equal-letter runs.")
+            command = "{exe} {bwt} {sap} {buffer}".format(exe = min_run_exe, bwt = args.output+".ebwt", sap = args.output+".bwt.red_sap",
                                                           buffer = args.buffer)
             if(args.verbose): print(command)
             if(execute_command(command,logfile,logfile_name)!=True):
                 return
             if(args.verbose): print("Elapsed time: {0:.4f}".format(time.time()-start))
-            if(args.verbose): print("Remove temporary files.")
+            if(args.verbose): print("Removing temporary files.")
             os.rename(args.output+".ebwt.optbwt",args.output+".optbwt")
             os.remove(args.output+".ebwt")
             os.remove(args.output+".bwt.red_sap")
 
-# execute command: return True is everything OK, False otherwise
+# execute command: return True if everything OK, False otherwise
 def execute_command(command,logfile,logfile_name,env=None):
   try:
     #subprocess.run(command.split(),stdout=logfile,stderr=logfile,check=True,env=env)

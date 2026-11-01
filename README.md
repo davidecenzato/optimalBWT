@@ -8,23 +8,23 @@ To compute the r-index on top of the optimal BWT and download the benchmark data
 ```
 usage: optimalBWT.py [-h] [-a ALGORITHM] [-f] [-q] [-v] [-b BUFFER] input output
 
-optimal BWT is a tool that computes the optimal BWT of string collections.
+optimalBWT is a tool for computing the optimal BWT of string collections.
 
 positional arguments:
-  input                 input file name
-  output                output file name
+  input                 input file (FASTA or FASTQ)
+  output                output files basename
 
-options:
+optional arguments:
   -h, --help            show this help message and exit
   -a ALGORITHM, --algorithm ALGORITHM
-                        select which algorithm to use ((sais | bcr) def. sais)
-  -f, --fasta           take in input a fasta file (sais only, def. True)
-  -q, --fastq           take in input a fastq file (sais only, def. False)
-  -v, --verbose         verbose (def. False)
+                        algorithm to use: sais or bcr (default: sais)
+  -f, --fasta           input is a FASTA file (default)
+  -q, --fastq           input is a FASTQ file (sais only)
+  -v, --verbose         verbose output
   -b BUFFER, --buffer BUFFER
-                        set memory buffer size in MB (BCR only, def. 10)
+                        memory buffer size in MB (bcr only, default: 10)
 ```
-When using the SAIS-based algorithm you can choose your input format between fasta and fastq format. When using the BCR-based algorithm you can choose the size of the input buffer for the algorithm permuting the characters in the SAP-intervals.
+With the SAIS-based algorithm (`-a sais`, the default), the input can be either a FASTA file (`-f`, the default) or a FASTQ file (`-q`). With the BCR-based algorithm (`-a bcr`), you can set the size of the memory buffer (`-b`, in MB, default 10) used in the BWT run-minimization algorithm that permutes the characters in the SAP-intervals.
 
 ### Requirements
 
@@ -48,10 +48,10 @@ make
 ### Run on Example Data
 
 ```console
-// Construct the optimal BWT of fasta file using the SAIS-based algorithm
+// Construct the optimal BWT of FASTA files using the SAIS-based algorithm
 python3 optimalBWT.py --algorithm sais --fasta --verbose input.fasta output
 
-// Construct the optimal BWT of fasta file using the BCR-based algorithm
+// Construct the optimal BWT of FASTA files using the BCR-based algorithm
 python3 optimalBWT.py --algorithm bcr --verbose -b 10 input.fasta output
 ```
 
